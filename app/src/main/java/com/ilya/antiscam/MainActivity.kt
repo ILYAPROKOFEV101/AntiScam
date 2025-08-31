@@ -205,7 +205,7 @@ fun InstructionsCard() {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onTertiaryContainer
             )
-            
+            // just
             Spacer(modifier = Modifier.height(12.dp))
             
             Text(
