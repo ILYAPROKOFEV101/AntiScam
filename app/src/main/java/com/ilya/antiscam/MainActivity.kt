@@ -110,7 +110,7 @@ fun AntiScamScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Заголовок
+            // Заголовок //
             Text(
                 text = "AntiScam",
                 fontSize = 32.sp,
