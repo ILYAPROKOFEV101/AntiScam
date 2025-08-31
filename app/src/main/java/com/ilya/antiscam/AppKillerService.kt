@@ -39,28 +39,28 @@ class AppKillerService : Service() {
     }
     
     private fun startAggressiveBlocking() {
-        handler.postDelayed({
+        handler.post {
             try {
-                Log.i(TAG, "Начинаю агрессивную блокировку MAx...")
+                Log.i(TAG, "Начинаю мгновенную агрессивную блокировку MAx...")
                 
-                // Способ 1: Принудительное закрытие через ActivityManager
+                // Способ 1: Мгновенное принудительное закрытие через ActivityManager
                 forceKillApp()
                 
-                // Способ 2: Попытка через UsageStatsManager
+                // Способ 2: Мгновенная попытка через UsageStatsManager
                 killThroughUsageStats()
                 
-                // Способ 3: Попытка через системные команды
+                // Способ 3: Мгновенная попытка через системные команды
                 killThroughSystemCommands()
                 
-                // Способ 4: Проверка и повторная попытка
-                handler.postDelayed({
+                // Способ 4: Мгновенная проверка и повторная попытка БЕЗ ЗАДЕРЖКИ
+                handler.post {
                     checkAndRepeat()
-                }, 300)
+                }
                 
             } catch (e: Exception) {
-                Log.e(TAG, "Ошибка в агрессивной блокировке: ${e.message}")
+                Log.e(TAG, "Ошибка в мгновенной агрессивной блокировке: ${e.message}")
             }
-        }, 100)
+        }
     }
     
     private fun forceKillApp() {
@@ -151,22 +151,22 @@ class AppKillerService : Service() {
                 val packageName = topTask.topActivity?.packageName
                 
                 if (packageName == TARGET_APP) {
-                    Log.w(TAG, "MAx все еще активен после агрессивной блокировки, повторная попытка...")
+                    Log.w(TAG, "MAx все еще активен после мгновенной блокировки, мгновенная повторная попытка...")
                     
-                    // Финальная попытка
+                    // Мгновенная финальная попытка
                     forceKillApp()
                     
-                    // Запуск MainActivity
+                    // Мгновенный запуск MainActivity
                     val intent = Intent(this, MainActivity::class.java)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(intent)
                     
                 } else {
-                    Log.i(TAG, "MAx успешно заблокирован агрессивным методом")
+                    Log.i(TAG, "MAx мгновенно заблокирован агрессивным методом")
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка при checkAndRepeat: ${e.message}")
+            Log.e(TAG, "Ошибка при мгновенной проверке: ${e.message}")
         }
     }
     

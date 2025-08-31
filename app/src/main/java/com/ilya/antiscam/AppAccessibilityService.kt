@@ -64,45 +64,48 @@ class AppAccessibilityService : AccessibilityService() {
     
     private fun blockTargetApp() {
         try {
-            Log.i(TAG, "Начинаю агрессивную блокировку приложения MAx...")
+            Log.i(TAG, "Начинаю мгновенную блокировку приложения MAx...")
             
-            // Способ 1: Попытка закрыть через системные команды
+            // Способ 1: Мгновенное закрытие через системные команды
             forceCloseTargetApp()
             
-            // Способ 2: Запуск AppKillerService для агрессивной блокировки
+            // Способ 2: Мгновенный запуск AppKillerService для агрессивной блокировки
             val killerIntent = Intent(this, AppKillerService::class.java)
             startService(killerIntent)
             
-            // Способ 3: Запуск MainActivity поверх MAx
+            // Способ 3: Мгновенный запуск MainActivity поверх MAx
             val intent = Intent(this, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
             
-            Log.i(TAG, "MainActivity запущена поверх MAx через AccessibilityService")
+            Log.i(TAG, "MainActivity мгновенно запущена поверх MAx")
             
-            // Способ 4: Возврат на главный экран
+            // Способ 4: Мгновенный возврат на главный экран
             val homeIntent = Intent(Intent.ACTION_MAIN)
             homeIntent.addCategory(Intent.CATEGORY_HOME)
             homeIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(homeIntent)
             
-            // Способ 5: Попытка закрыть через кнопку "Назад"
+            // Способ 5: Мгновенное действие "Назад" (несколько раз для надежности)
             performGlobalAction(GLOBAL_ACTION_BACK)
+            handler.post {
+                performGlobalAction(GLOBAL_ACTION_BACK)
+            }
             
-            // Способ 6: Дополнительная проверка и повторная блокировка
-            handler.postDelayed({
+            // Способ 6: Мгновенная проверка и повторная блокировка БЕЗ ЗАДЕРЖКИ
+            handler.post {
                 val currentApp = getCurrentApp()
                 if (currentApp == TARGET_APP) {
-                    Log.w(TAG, "MAx все еще активен, повторная блокировка...")
+                    Log.w(TAG, "MAx все еще активен, мгновенная повторная блокировка...")
                     repeatBlocking()
                 } else {
                     isBlocking = false
-                    Log.i(TAG, "MAx успешно заблокирован")
+                    Log.i(TAG, "MAx мгновенно заблокирован")
                 }
-            }, 200)
+            }
             
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка при блокировке через AccessibilityService: ${e.message}")
+            Log.e(TAG, "Ошибка при мгновенной блокировке: ${e.message}")
             isBlocking = false
         }
     }
@@ -120,33 +123,36 @@ class AppAccessibilityService : AccessibilityService() {
     
     private fun repeatBlocking() {
         try {
-            // Повторная попытка закрытия
+            // Мгновенная повторная попытка закрытия
             forceCloseTargetApp()
             
-            // Попытка найти и нажать кнопку "Закрыть" или "Назад"
+            // Мгновенная попытка найти и нажать кнопку "Закрыть" или "Назад"
             val rootNode = rootInActiveWindow
             if (rootNode != null) {
                 findAndClickCloseButton(rootNode)
                 rootNode.recycle()
             }
             
-            // Еще одна попытка возврата на главный экран
+            // Мгновенный возврат на главный экран
             val homeIntent = Intent(Intent.ACTION_MAIN)
             homeIntent.addCategory(Intent.CATEGORY_HOME)
             homeIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(homeIntent)
             
-            // Проверка через 3 секунды
-            handler.postDelayed({
+            // Мгновенная проверка БЕЗ ЗАДЕРЖКИ
+            handler.post {
                 val currentApp = getCurrentApp()
                 if (currentApp == TARGET_APP) {
-                    Log.e(TAG, "MAx не удалось заблокировать после повторных попыток")
+                    Log.e(TAG, "MAx не удалось заблокировать мгновенно, финальная попытка...")
+                    // Финальная мгновенная попытка
+                    forceCloseTargetApp()
+                    performGlobalAction(GLOBAL_ACTION_BACK)
                 }
                 isBlocking = false
-            }, 300)
+            }
             
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка при повторной блокировке: ${e.message}")
+            Log.e(TAG, "Ошибка при мгновенной повторной блокировке: ${e.message}")
             isBlocking = false
         }
     }

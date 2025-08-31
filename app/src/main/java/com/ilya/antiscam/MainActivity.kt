@@ -32,15 +32,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
+                setContent {
             AntiScamTheme {
-
-                        AntiScamScreen(
-                            onStopService = { stopService() },
-                            onStartAccessibility = { startAccessibilitySettings() },
-                            onUninstallMax = { uninstallMaxApp() }
-                        )
-
+                AntiScamScreen(
+                    onStopService = { stopService() },
+                    onStartAccessibility = { startAccessibilitySettings() },
+                    onUninstallMax = { checkPermissionsAndUninstall() }
+                )
             }
         }
 
@@ -71,6 +69,8 @@ class MainActivity : ComponentActivity() {
     
     private fun uninstallMaxApp() {
         try {
+            Log.i("MainActivity", "Начинаю удаление приложения MAx...")
+            
             val intent = Intent(Intent.ACTION_DELETE)
             intent.data = android.net.Uri.parse("package:ru.oneme.app")
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -78,13 +78,51 @@ class MainActivity : ComponentActivity() {
             // Проверяем, есть ли приложение для обработки этого Intent
             val resolveInfo = packageManager.resolveActivity(intent, 0)
             if (resolveInfo != null) {
+                Log.i("MainActivity", "Найдено приложение для удаления: ${resolveInfo.activityInfo.name}")
                 startActivity(intent)
                 Log.i("MainActivity", "Intent удаления отправлен для MAx")
             } else {
                 Log.w("MainActivity", "Нет приложения для обработки Intent удаления")
+                // Попробуем альтернативный способ
+                tryAlternativeUninstall()
             }
         } catch (e: Exception) {
             Log.e("MainActivity", "Ошибка при попытке удаления: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+    
+    private fun tryAlternativeUninstall() {
+        try {
+            Log.i("MainActivity", "Пробую альтернативный способ удаления...")
+            
+            // Способ 1: Через настройки приложений
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = android.net.Uri.parse("package:ru.oneme.app")
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            
+            Log.i("MainActivity", "Открыты настройки приложения MAx для ручного удаления")
+            
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Ошибка при альтернативном удалении: ${e.message}")
+        }
+    }
+    
+    private fun checkPermissionsAndUninstall() {
+        Log.i("MainActivity", "Проверяю разрешения для удаления...")
+        uninstallMaxApp()
+    }
+    
+    private fun checkPermissionsStatus() {
+        Log.i("MainActivity", "Проверка статуса разрешений...")
+        // Открываем настройки приложения для проверки разрешений
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = android.net.Uri.parse("package:$packageName")
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Ошибка при открытии настроек: ${e.message}")
         }
     }
 }

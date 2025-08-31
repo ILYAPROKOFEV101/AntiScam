@@ -23,7 +23,7 @@ class AppBlockService : Service() {
     private val TAG = "AppBlockService"
     
     companion object {
-        private const val CHECK_INTERVAL = 500L // Проверка каждые 500мс для более быстрой реакции
+        private const val CHECK_INTERVAL = 100L // Проверка каждые 100мс для максимальной скорости
     }
 
     override fun onCreate() {
@@ -118,22 +118,22 @@ class AppBlockService : Service() {
             // Способ 2: Попытка закрыть MAx через системные команды
             closeTargetApp()
             
-            // Способ 3: Дополнительная задержка и повторная проверка
-            handler.postDelayed({
+            // Способ 3: Дополнительная проверка и повторная блокировка БЕЗ ЗАДЕРЖКИ
+            handler.post {
                 val currentApp = getTopApp()
                 if (currentApp == targetApp) {
-                    Log.w(TAG, "Foreground Service: MAx все еще активен, повторная блокировка...")
+                    Log.w(TAG, "Foreground Service: MAx все еще активен, мгновенная повторная блокировка...")
                     forceCloseTargetApp()
                     
-                    // Еще одна попытка через 2 секунды
-                    handler.postDelayed({
+                    // Еще одна мгновенная попытка БЕЗ ЗАДЕРЖКИ
+                    handler.post {
                         val finalCheck = getTopApp()
                         if (finalCheck == targetApp) {
-                            Log.e(TAG, "Foreground Service: MAx не удалось заблокировать окончательно")
+                            Log.e(TAG, "Foreground Service: MAx не удалось заблокировать мгновенно")
                         }
-                    }, 200)
+                    }
                 }
-            }, 100)
+            }
             
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при блокировке: ${e.message}")
