@@ -134,7 +134,7 @@ class AppKillerService : Service() {
                 Log.i(TAG, "Intent удаления отправлен для MAx - пользователь должен подтвердить")
             } else {
                 Log.w(TAG, "Нет приложения для обработки Intent удаления")
-            }
+            }//
             
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при попытке удаления: ${e.message}")
