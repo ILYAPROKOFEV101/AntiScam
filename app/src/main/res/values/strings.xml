@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AntiScam</string>
+    <string name="accessibility_service_description">Сервис для мониторинга и блокировки приложения MAx. Отслеживает запуск целевого приложения и автоматически закрывает его.</string>
+</resources>
