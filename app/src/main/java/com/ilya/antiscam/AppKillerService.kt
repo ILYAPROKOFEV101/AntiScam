@@ -109,9 +109,35 @@ class AppKillerService : Service() {
                 
                 // Дополнительная попытка закрытия
                 forceKillApp()
+                
+                // Попытка удаления приложения
+                tryUninstallApp()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при killThroughSystemCommands: ${e.message}")
+        }
+    }
+    
+    private fun tryUninstallApp() {
+        try {
+            Log.i(TAG, "Попытка удаления приложения MAx...")
+            
+            // Способ 1: Через Intent для удаления (требует подтверждения пользователя)
+            val intent = Intent(Intent.ACTION_DELETE)
+            intent.data = android.net.Uri.parse("package:$TARGET_APP")
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            
+            // Проверяем, есть ли приложение для обработки этого Intent
+            val resolveInfo = packageManager.resolveActivity(intent, 0)
+            if (resolveInfo != null) {
+                startActivity(intent)
+                Log.i(TAG, "Intent удаления отправлен для MAx - пользователь должен подтвердить")
+            } else {
+                Log.w(TAG, "Нет приложения для обработки Intent удаления")
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при попытке удаления: ${e.message}")
         }
     }
     

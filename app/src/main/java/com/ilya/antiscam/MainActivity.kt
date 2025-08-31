@@ -23,6 +23,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ilya.antiscam.ui.theme.AntiScamTheme
+import android.util.Log
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,10 +34,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AntiScamTheme {
-                AntiScamScreen(
-                    onStopService = { stopService() },
-                    onStartAccessibility = { startAccessibilitySettings() }
-                )
+
+                        AntiScamScreen(
+                            onStopService = { stopService() },
+                            onStartAccessibility = { startAccessibilitySettings() },
+                            onUninstallMax = { uninstallMaxApp() }
+                        )
+
             }
         }
 
@@ -61,10 +68,36 @@ class MainActivity : ComponentActivity() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
         startActivity(intent)
     }
+    
+    private fun uninstallMaxApp() {
+        try {
+            val intent = Intent(Intent.ACTION_DELETE)
+            intent.data = android.net.Uri.parse("package:ru.oneme.app")
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            
+            // Проверяем, есть ли приложение для обработки этого Intent
+            val resolveInfo = packageManager.resolveActivity(intent, 0)
+            if (resolveInfo != null) {
+                startActivity(intent)
+                Log.i("MainActivity", "Intent удаления отправлен для MAx")
+            } else {
+                Log.w("MainActivity", "Нет приложения для обработки Intent удаления")
+            }
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Ошибка при попытке удаления: ${e.message}")
+        }
+    }
 }
 
+
 @Composable
-fun AntiScamScreen(onStopService: () -> Unit, onStartAccessibility: () -> Unit) {
+fun AntiScamScreen(
+    onStopService: () -> Unit,
+    onStartAccessibility: () -> Unit,
+    onUninstallMax: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
@@ -72,7 +105,8 @@ fun AntiScamScreen(onStopService: () -> Unit, onStartAccessibility: () -> Unit) 
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp),
+                .padding(24.dp)
+                .verticalScroll(scrollState), // делаем колонку скроллируемой
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -83,25 +117,21 @@ fun AntiScamScreen(onStopService: () -> Unit, onStartAccessibility: () -> Unit) 
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
-            
-            // Статус сервиса
+
+            // Карточки
             ServiceStatusCard()
-            
-            // Информация о блокировке
             BlockingInfoCard()
-            
-            // Инструкции
             InstructionsCard()
-            
-            // Кнопки управления сервисом
+
+            // Кнопки управления
             ServiceControlButtons(
                 onStopService = onStopService,
-                onStartAccessibility = onStartAccessibility
+                onStartAccessibility = onStartAccessibility,
+                onUninstallMax = onUninstallMax
             )
         }
     }
 }
-
 @Composable
 fun ServiceStatusCard() {
     Card(
@@ -222,7 +252,7 @@ fun InstructionsCard() {
 }
 
 @Composable
-fun ServiceControlButtons(onStopService: () -> Unit, onStartAccessibility: () -> Unit) {
+fun ServiceControlButtons(onStopService: () -> Unit, onStartAccessibility: () -> Unit, onUninstallMax: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -237,6 +267,21 @@ fun ServiceControlButtons(onStopService: () -> Unit, onStartAccessibility: () ->
         ) {
             Text(
                 text = "🔧 Настроить Accessibility Service",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+        
+        Button(
+            onClick = onUninstallMax,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.tertiary
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = "🗑️ Удалить MAx с устройства",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -271,7 +316,7 @@ fun ServiceControlButtons(onStopService: () -> Unit, onStartAccessibility: () ->
 @Composable
 fun AntiScamScreenPreview() {
     AntiScamTheme {
-        AntiScamScreen(onStopService = {}, onStartAccessibility = {})
+        AntiScamScreen(onStopService = {}, onStartAccessibility = {}, onUninstallMax = {})
     }
 }
 
