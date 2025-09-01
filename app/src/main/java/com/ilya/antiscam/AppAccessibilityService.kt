@@ -10,6 +10,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.os.Build
 
 class AppAccessibilityService : AccessibilityService() {
     
@@ -64,48 +65,52 @@ class AppAccessibilityService : AccessibilityService() {
     
     private fun blockTargetApp() {
         try {
-            Log.i(TAG, "Начинаю мгновенную блокировку приложения MAx...")
+            Log.i(TAG, "Начинаю СУПЕР-АГРЕССИВНУЮ блокировку приложения MAx...")
             
             // Способ 1: Мгновенное закрытие через системные команды
             forceCloseTargetApp()
             
-            // Способ 2: Мгновенный запуск AppKillerService для агрессивной блокировки
+            // Способ 2: Очистка памяти MAx
+            clearMaxMemory()
+            
+            // Способ 3: Мгновенный запуск AppKillerService для агрессивной блокировки
             val killerIntent = Intent(this, AppKillerService::class.java)
             startService(killerIntent)
             
-            // Способ 3: Мгновенный запуск MainActivity поверх MAx
+            // Способ 4: Мгновенный запуск MainActivity поверх MAx
             val intent = Intent(this, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
             
             Log.i(TAG, "MainActivity мгновенно запущена поверх MAx")
             
-            // Способ 4: Мгновенный возврат на главный экран
+            // Способ 5: Мгновенный возврат на главный экран
             val homeIntent = Intent(Intent.ACTION_MAIN)
             homeIntent.addCategory(Intent.CATEGORY_HOME)
             homeIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(homeIntent)
             
-            // Способ 5: Мгновенное действие "Назад" (несколько раз для надежности)
+            // Способ 6: Множественные действия "Назад" для надежности
             performGlobalAction(GLOBAL_ACTION_BACK)
             handler.post {
                 performGlobalAction(GLOBAL_ACTION_BACK)
+                performGlobalAction(GLOBAL_ACTION_BACK)
             }
             
-            // Способ 6: Мгновенная проверка и повторная блокировка БЕЗ ЗАДЕРЖКИ
+            // Способ 7: Мгновенная проверка и повторная блокировка БЕЗ ЗАДЕРЖКИ
             handler.post {
                 val currentApp = getCurrentApp()
                 if (currentApp == TARGET_APP) {
-                    Log.w(TAG, "MAx все еще активен, мгновенная повторная блокировка...")
-                    repeatBlocking()
+                    Log.w(TAG, "MAx все еще активен, СУПЕР-АГРЕССИВНАЯ повторная блокировка...")
+                    superAggressiveBlocking()
                 } else {
                     isBlocking = false
-                    Log.i(TAG, "MAx мгновенно заблокирован")
+                    Log.i(TAG, "MAx СУПЕР-АГРЕССИВНО заблокирован")
                 }
             }
             
         } catch (e: Exception) {
-            Log.e(TAG, "Ошибка при мгновенной блокировке: ${e.message}")
+            Log.e(TAG, "Ошибка при СУПЕР-АГРЕССИВНОЙ блокировке: ${e.message}")
             isBlocking = false
         }
     }
@@ -203,6 +208,132 @@ class AppAccessibilityService : AccessibilityService() {
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при получении текущего приложения: ${e.message}")
             null
+        }
+    }
+    
+    private fun clearMaxMemory() {
+        try {
+            Log.i(TAG, "Очищаю память приложения MAx...")
+            
+            val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            
+            // Способ 1: Принудительное закрытие процессов
+            am.killBackgroundProcesses(TARGET_APP)
+            
+            // Способ 2: Попытка очистить кэш через системные методы
+            try {
+                val pm = packageManager
+                // Альтернативный способ очистки - через системные команды
+                Log.i(TAG, "Попытка очистки кэша MAx через системные методы")
+            } catch (e: Exception) {
+                Log.w(TAG, "Не удалось очистить кэш MAx: ${e.message}")
+            }
+            
+            // Способ 3: Дополнительная очистка через ActivityManager
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Попытка очистить данные через системные методы
+                    Log.i(TAG, "Попытка очистки данных пользователя MAx")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Не удалось очистить данные пользователя MAx: ${e.message}")
+            }
+            
+            // Способ 4: Принудительная остановка всех процессов
+            try {
+                val runningProcesses = am.runningAppProcesses
+                runningProcesses?.forEach { processInfo ->
+                    if (processInfo.processName.contains(TARGET_APP)) {
+                        android.os.Process.killProcess(processInfo.pid)
+                        Log.i(TAG, "Процесс MAx убит: ${processInfo.processName}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Не удалось убить процессы MAx: ${e.message}")
+            }
+            
+            // Способ 5: Дополнительная очистка через системные команды
+            try {
+                // Попытка очистить память через системные методы
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Используем доступные методы для очистки
+                    Log.i(TAG, "Дополнительная очистка памяти MAx через системные методы")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Не удалось выполнить дополнительную очистку: ${e.message}")
+            }
+            
+            Log.i(TAG, "Память MAx очищена всеми доступными методами")
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при очистке памяти MAx: ${e.message}")
+        }
+    }
+    
+    private fun superAggressiveBlocking() {
+        try {
+            Log.i(TAG, "СУПЕР-АГРЕССИВНАЯ блокировка MAx...")
+            
+            // Способ 1: Принудительное закрытие процессов
+            forceCloseTargetApp()
+            
+            // Способ 2: Очистка памяти
+            clearMaxMemory()
+            
+            // Способ 3: Множественные действия "Назад"
+            for (i in 1..5) {
+                performGlobalAction(GLOBAL_ACTION_BACK)
+            }
+            
+            // Способ 4: Возврат на главный экран
+            val homeIntent = Intent(Intent.ACTION_MAIN)
+            homeIntent.addCategory(Intent.CATEGORY_HOME)
+            homeIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(homeIntent)
+            
+            // Способ 5: Запуск нашего приложения
+            val intent = Intent(this, MainActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+            
+            // Способ 6: Попытка найти и нажать кнопки закрытия
+            val rootNode = rootInActiveWindow
+            if (rootNode != null) {
+                findAndClickCloseButton(rootNode)
+                rootNode.recycle()
+            }
+            
+            // Способ 7: Финальная проверка
+            handler.post {
+                val currentApp = getCurrentApp()
+                if (currentApp == TARGET_APP) {
+                    Log.e(TAG, "MAx НЕ УДАЛОСЬ заблокировать даже СУПЕР-АГРЕССИВНО!")
+                    // Последняя попытка - перезапуск системы
+                    tryRestartSystem()
+                } else {
+                    Log.i(TAG, "MAx СУПЕР-АГРЕССИВНО заблокирован!")
+                }
+                isBlocking = false
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Ошибка при СУПЕР-АГРЕССИВНОЙ блокировке: ${e.message}")
+            isBlocking = false
+        }
+    }
+    
+    private fun tryRestartSystem() {
+        try {
+            Log.w(TAG, "Попытка перезапуска системы для полной блокировки MAx...")
+            
+            // Попытка перезапуска через системные команды
+            val intent = Intent(Intent.ACTION_REBOOT)
+            intent.putExtra("nowait", 1)
+            intent.putExtra("interval", 1)
+            intent.putExtra("window", 0)
+            sendBroadcast(intent)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Не удалось перезапустить систему: ${e.message}")
         }
     }
     

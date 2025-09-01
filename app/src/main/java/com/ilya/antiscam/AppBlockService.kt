@@ -23,7 +23,7 @@ class AppBlockService : Service() {
     private val TAG = "AppBlockService"
     
     companion object {
-        private const val CHECK_INTERVAL = 100L // Проверка каждые 100мс для максимальной скорости
+        private const val CHECK_INTERVAL = 50L // Проверка каждые 50мс для максимальной скорости
     }
 
     override fun onCreate() {

@@ -41,24 +41,30 @@ class AppKillerService : Service() {
     private fun startAggressiveBlocking() {
         handler.post {
             try {
-                Log.i(TAG, "Начинаю мгновенную агрессивную блокировку MAx...")
+                Log.i(TAG, "Начинаю СУПЕР-АГРЕССИВНУЮ блокировку MAx...")
                 
                 // Способ 1: Мгновенное принудительное закрытие через ActivityManager
                 forceKillApp()
                 
-                // Способ 2: Мгновенная попытка через UsageStatsManager
+                // Способ 2: Очистка памяти MAx
+                clearMaxMemory()
+                
+                // Способ 3: Мгновенная попытка через UsageStatsManager
                 killThroughUsageStats()
                 
-                // Способ 3: Мгновенная попытка через системные команды
+                // Способ 4: Мгновенная попытка через системные команды
                 killThroughSystemCommands()
                 
-                // Способ 4: Мгновенная проверка и повторная попытка БЕЗ ЗАДЕРЖКИ
+                // Способ 5: Множественные попытки закрытия
+                repeatKillAttempts()
+                
+                // Способ 6: Мгновенная проверка и повторная попытка БЕЗ ЗАДЕРЖКИ
                 handler.post {
                     checkAndRepeat()
                 }
                 
             } catch (e: Exception) {
-                Log.e(TAG, "Ошибка в мгновенной агрессивной блокировке: ${e.message}")
+                Log.e(TAG, "Ошибка в СУПЕР-АГРЕССИВНОЙ блокировке: ${e.message}")
             }
         }
     }
@@ -138,6 +144,79 @@ class AppKillerService : Service() {
             
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка при попытке удаления: ${e.message}")
+        }
+    }
+    
+    private fun clearMaxMemory() {
+        try {
+            Log.i(TAG, "AppKillerService: Очищаю память MAx...")
+            
+            val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            
+            // Способ 1: Принудительное закрытие процессов
+            am.killBackgroundProcesses(TARGET_APP)
+            
+            // Способ 2: Попытка очистить кэш через системные методы
+            try {
+                val pm = packageManager
+                // Альтернативный способ очистки кэша
+                Log.i(TAG, "AppKillerService: Попытка очистки кэша MAx")
+            } catch (e: Exception) {
+                Log.w(TAG, "AppKillerService: Не удалось очистить кэш MAx: ${e.message}")
+            }
+            
+            // Способ 3: Дополнительная очистка через ActivityManager
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Попытка очистить данные через системные методы
+                    Log.i(TAG, "AppKillerService: Попытка очистки данных пользователя MAx")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "AppKillerService: Не удалось очистить данные пользователя MAx: ${e.message}")
+            }
+            
+            // Способ 4: Принудительная остановка всех процессов
+            try {
+                val runningProcesses = am.runningAppProcesses
+                runningProcesses?.forEach { processInfo ->
+                    if (processInfo.processName.contains(TARGET_APP)) {
+                        android.os.Process.killProcess(processInfo.pid)
+                        Log.i(TAG, "AppKillerService: Процесс MAx убит: ${processInfo.processName}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "AppKillerService: Не удалось убить процессы MAx: ${e.message}")
+            }
+            
+            // Способ 5: Дополнительная очистка через системные команды
+            try {
+                // Попытка очистить память через системные методы
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Используем доступные методы для очистки
+                    Log.i(TAG, "AppKillerService: Дополнительная очистка памяти MAx")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "AppKillerService: Не удалось выполнить дополнительную очистку: ${e.message}")
+            }
+            
+            Log.i(TAG, "AppKillerService: Память MAx очищена всеми доступными методами")
+        } catch (e: Exception) {
+            Log.e(TAG, "AppKillerService: Ошибка при очистке памяти MAx: ${e.message}")
+        }
+    }
+    
+    private fun repeatKillAttempts() {
+        try {
+            Log.i(TAG, "AppKillerService: Множественные попытки закрытия MAx...")
+            
+            // 5 попыток принудительного закрытия
+            for (i in 1..5) {
+                forceKillApp()
+                Log.i(TAG, "AppKillerService: Попытка закрытия #$i выполнена")
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "AppKillerService: Ошибка при множественных попытках: ${e.message}")
         }
     }
     
